@@ -279,6 +279,113 @@ web_based_rag/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Deploying to Hugging Face Spaces
+
+You can deploy this RAG application to Hugging Face Spaces using a Docker container. Here's how to do it:
+
+### Option 1: Using the Docker Image
+
+1. Create a new Space on Hugging Face with the following settings:
+   - **Space SDK**: Docker
+   - **Hardware**: Choose based on your needs (GPU recommended for better performance)
+
+2. Add your Hugging Face token and API keys as secrets in the Space settings:
+   - `HF_TOKEN`: Your Hugging Face token (`your_hf_token_here`)
+   - `GROQ_API_KEY`: Your Groq API key
+   - Any other required API keys
+
+3. Create a `Dockerfile` in your Space repository with the following content:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install nodejs for the frontend
+RUN apt-get update && apt-get install -y nodejs npm && apt-get clean
+
+# Copy backend requirements and install Python dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install frontend dependencies
+COPY frontend/package*.json ./frontend/
+RUN cd frontend && npm ci --only=production
+
+# Copy the rest of the application
+COPY . .
+
+# Build the frontend
+RUN cd frontend && npm run build
+
+# Expose the port Hugging Face Spaces expects
+EXPOSE 7860
+
+# Start both backend and frontend
+CMD bash -c "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 7860 & cd frontend && npx serve -s dist -l 7861"
+```
+
+4. Create an `.env` file in the backend directory with your API keys:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+# Add other required environment variables
+```
+
+### Option 2: Deploying Your Existing React Frontend (Recommended)
+
+To deploy your existing React frontend along with the FastAPI backend (this preserves your original UI):
+
+1. In your Hugging Face Space repository, copy your entire project
+
+2. Create a Dockerfile that builds and serves both applications:
+
+```dockerfile
+FROM node:18-alpine AS frontend-build
+WORKDIR /app
+COPY frontend/package*.json .
+RUN npm ci
+COPY frontend/ .
+RUN npm run build
+
+FROM python:3.11-slim AS backend-build
+WORKDIR /app
+
+# Install dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY backend/ .
+
+# Copy built frontend
+COPY --from=frontend-build /app/dist ./frontend/dist
+
+# Install node for serving frontend
+RUN apt-get update && apt-get install -y nodejs npm && apt-get clean
+
+EXPOSE 7860
+
+CMD python -m uvicorn app.main:app --host 0.0.0.0 --port 7860
+```
+
+3. Update your backend CORS settings in `backend/app/config.py` to allow the Hugging Face Space URL
+
+4. Add your API keys as Space secrets:
+   - `GROQ_API_KEY`: Your Groq API key
+   - Other required API keys
+
+Note: This approach maintains your original React interface which is more feature-rich than a Gradio interface. Your existing frontend with its document cards, sidebar, settings modal, and responsive design will be preserved.
+
+## Deployment Steps
+
+1. Create a new repository on Hugging Face Spaces
+2. Push your code to the repository
+3. Add your API keys as secrets in the Space settings
+4. The application will automatically build and deploy
+
+Your RAG application is now ready for deployment on Hugging Face Spaces with your Hugging Face token: `your_hf_token_here`
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
