@@ -31,6 +31,17 @@ backend/storage/
 *.db
 *.sqlite
 *.sqlite3
+backend/.env.bak
+backend/venv/
+backend/.venv/
+backend/__pycache__/
+backend/storage/vector_db/
+backend/storage/uploads/
+*.dylib
+*.so
+*.dll
+*.a
+*.lib
 
 # -----------------------------
 # Frontend - Node.js
