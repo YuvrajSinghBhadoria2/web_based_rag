@@ -28,6 +28,7 @@ A production-ready Retrieval-Augmented Generation (RAG) system that combines PDF
 
 - **Multi-Modal Query Processing**: Supports queries against both uploaded PDF documents and live web search
 - **PDF Document Management**: Upload, store, and process PDF documents with advanced extraction techniques
+- **OCR Support for Scanned PDFs**: Automatically extracts text from image-based/scanned PDFs using Tesseract OCR
 - **Hybrid Search**: Combine PDF-based retrieval with web search for comprehensive answers
 - **Confidence Scoring**: Provides confidence scores for generated responses
 - **Vector Storage**: Efficient similarity search using ChromaDB vector database
@@ -45,7 +46,8 @@ A production-ready Retrieval-Augmented Generation (RAG) system that combines PDF
 - **Language**: Python 3.11+
 - **Web Framework**: FastAPI with Uvicorn ASGI server
 - **HTTP Client**: aiohttp
-- **PDF Processing**: PyPDF, pdfplumber
+- **PDF Processing**: PyPDF, pdfplumber, pdf2image, pytesseract
+- **OCR**: Tesseract for scanned/image-based PDFs
 - **LLM Integration**: Groq API
 - **Environment Management**: python-dotenv
 - **Data Validation**: Pydantic
@@ -84,6 +86,10 @@ The application follows a microservices architecture with a clear separation bet
 - Node.js 18+
 - npm or yarn
 - Git
+- **Tesseract OCR** (for scanned PDF support):
+  - macOS: `brew install tesseract poppler`
+  - Ubuntu: `sudo apt-get install tesseract-ocr poppler-utils`
+  - Windows: Download from https://github.com/tesseract-ocr/tesseract
 
 ### Backend Setup
 
@@ -129,6 +135,8 @@ Create a `.env` file in the backend directory with the following variables:
 
 ```env
 GROQ_API_KEY=your_groq_api_key_here
+SERPER_API_KEY=your_serper_api_key_here  # Optional - for web search
+TAVILY_API_KEY=your_tavily_api_key_here  # Optional - for web search
 CHROMA_DB_PATH=./storage/vector_db
 UPLOAD_DIR=./storage/uploads
 MODEL_NAME=llama3-70b-8192
@@ -136,10 +144,12 @@ TEMPERATURE=0.1
 MAX_TOKENS=1000
 TOP_P=1
 STOP_TOKENS=["\n", "###"]
-CORS_ORIGINS=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000"]
+CORS_ORIGINS=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://localhost:5175"]
 ```
 
 Replace `your_groq_api_key_here` with your actual Groq API key. You can get one from [Groq Cloud](https://console.groq.com/keys).
+
+For web search functionality, add Serper or Tavily API keys (optional - without them, hybrid mode will only use PDF sources).
 
 ## Usage
 
@@ -171,6 +181,13 @@ The frontend will be available at `http://localhost:5173`.
 3. **Enter Query**: Type your question in the query input
 4. **Get Response**: Receive an AI-generated answer with confidence score and source citations
 5. **Review Sources**: View the documents and web pages that contributed to the response
+
+### OCR for Scanned PDFs
+
+The system automatically detects and processes scanned/image-based PDFs using Tesseract OCR:
+- If a PDF contains selectable text, it uses the native text extraction
+- If no text is found, it automatically applies OCR to extract text from images
+- Works with scanned documents, image-only PDFs, and documents with mixed content
 
 ## Project Structure
 
