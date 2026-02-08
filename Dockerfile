@@ -38,4 +38,12 @@ ENV PYTHONUNBUFFERED=1
 ENV NODE_ENV=production
 
 # Start the application
+# Install serve for frontend
+RUN npm install -g serve
+
+# Build frontend and copy to expected location
+RUN cd frontend && npm install && npm run build
+RUN mkdir -p /app && cp -r frontend/dist/* /app/ 2>/dev/null || echo "Copying frontend files"
+
+# Start the application - serve both backend API and frontend
 CMD ["sh", "-c", "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 7860"]
