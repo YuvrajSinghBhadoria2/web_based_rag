@@ -1,3 +1,12 @@
+---
+title: Web-Based RAG System
+emoji: 📚
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Web-Based RAG System
 
 A production-ready Retrieval-Augmented Generation (RAG) system that combines PDF document processing and web search capabilities to provide intelligent answers to user queries.
@@ -281,7 +290,21 @@ web_based_rag/
 
 ## Deploying to Hugging Face Spaces
 
-You can deploy this RAG application to Hugging Face Spaces using a Docker container. Here's how to do it:
+This application is configured for deployment on Hugging Face Spaces using the Docker SDK. The repository includes:
+
+- A `Dockerfile` that sets up the complete environment
+- A `README.md` with proper Hugging Face metadata
+- All necessary backend and frontend code
+
+To deploy to your Space:
+
+1. Create a new Space with the Docker SDK
+2. Point it to this repository
+3. Add your API keys as Space Secrets:
+   - `GROQ_API_KEY`: Your Groq API key
+4. The Space will automatically build and deploy using the Dockerfile
+
+Your application will be served at the port specified in the Dockerfile (7860).
 
 ### Option 1: Using the Docker Image
 
