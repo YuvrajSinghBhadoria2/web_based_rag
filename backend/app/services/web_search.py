@@ -159,12 +159,17 @@ class TavilySearchProvider(BaseSearchProvider):
         search_results = data.get("results", [])
 
         for i, result in enumerate(search_results[: self.config.max_results]):
+            # Scale scores to be comparable with PDF cosine similarity (0.3-0.7)
+            # Tavily already provides relevance scores, so we scale them
+            tavily_score = result.get("score", 0.7)
+            scaled_score = 0.3 + (tavily_score * 0.4)  # Maps 0-1 to 0.3-0.7
+
             results.append(
                 SearchResult(
                     title=result.get("title", ""),
                     url=result.get("url", ""),
                     snippet=result.get("content", ""),
-                    score=result.get("score", 0.9 - (i * 0.05)),
+                    score=scaled_score - (i * 0.05),
                     provider="tavily",
                 )
             )
@@ -205,13 +210,15 @@ class SerperSearchProvider(BaseSearchProvider):
 
         organic_results = data.get("organic_results", [])
 
+        # Scale scores to be comparable with PDF cosine similarity (0.3-0.7)
         for i, result in enumerate(organic_results[: self.config.max_results]):
+            base_score = 0.65 - (i * 0.05)  # Start at 0.65, decrease by 0.05
             results.append(
                 SearchResult(
                     title=result.get("title", ""),
                     url=result.get("link", ""),
                     snippet=result.get("snippet", ""),
-                    score=0.8 - (i * 0.05),
+                    score=base_score,
                     provider="serper",
                 )
             )
@@ -252,13 +259,15 @@ class BraveSearchProvider(BaseSearchProvider):
 
         web_results = data.get("web", {}).get("results", [])
 
+        # Scale scores to be comparable with PDF cosine similarity (0.3-0.7)
         for i, result in enumerate(web_results[: self.config.max_results]):
+            base_score = 0.65 - (i * 0.05)  # Start at 0.65, decrease by 0.05
             results.append(
                 SearchResult(
                     title=result.get("title", ""),
                     url=result.get("url", ""),
                     snippet=result.get("description", ""),
-                    score=0.85 - (i * 0.05),
+                    score=base_score,
                     provider="brave",
                 )
             )
@@ -296,13 +305,15 @@ class YouComSearchProvider(BaseSearchProvider):
 
         search_results = data.get("results", [])
 
+        # Scale scores to be comparable with PDF cosine similarity (0.3-0.7)
         for i, result in enumerate(search_results[: self.config.max_results]):
+            base_score = 0.65 - (i * 0.05)  # Start at 0.65, decrease by 0.05
             results.append(
                 SearchResult(
                     title=result.get("title", ""),
                     url=result.get("url", ""),
                     snippet=result.get("snippet", ""),
-                    score=result.get("score", 0.85 - (i * 0.05)),
+                    score=base_score,
                     provider="youcom",
                 )
             )
